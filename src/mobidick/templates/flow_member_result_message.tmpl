@@ -1,0 +1,5 @@
+{{ call.member }} finished message flow {{ mfr.message_flow_name }}
+{% for step in call.steps %}
+{{ step.step_id }}: {{ step.answer_id|answer_id }}{% if step.step_type == "form_step" and step.form_result %} - {{ step|form_result|safe }}{% endif %}{% endfor %}
+
+You can respond to {{ call.member }} using the Reply button.

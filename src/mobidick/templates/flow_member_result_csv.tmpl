@@ -1,0 +1,9 @@
+{% autoescape off %}"member result for";"{{ mfmr.run.description|escape_csv }}"
+"member result of";"{{ call.member|escape_csv }}"
+"member result received on (UTC)";"{{ mfmr.timestamp|escape_csv }}"
+
+"step id";"answer id";"form value";"received timestamp (UTC)";"acknowledged timestamp (UTC)";"step type";"message flow id";"step id"{% for step in call.steps %}
+"{{ step.step_id|escape_csv }}";"{{ step.answer_id|answer_id|escape_csv }}";"{{ step|form_result|escape_csv }}";"{{ step.received_timestamp|escape_csv }}";"{{ step.acknowledged_timestamp|escape_csv }}";"{{ step.step_type|escape_csv }}";"{{ step.message_flow_id|escape_csv }}";"{{ step.step_id|escape_csv }}"{% endfor %}
+
+"End step id";"{{ call.end_id|escape_csv }}"
+"End message flow id";"{{ call.end_message_flow_id|escape_csv }}"{% endautoescape %}

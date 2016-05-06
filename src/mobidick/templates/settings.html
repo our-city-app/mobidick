@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" value="notranslate"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="/static/codemirror/codemirror.css"/>
+    <link rel="stylesheet" href="/static/codemirror/theme.css"/>
+
+    <style>
+        body {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Server settings</h2>
+    <form method="post">
+        <textarea id="settings" name="settings">{{settings}}</textarea>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    <script type="text/javascript" src="/static/codemirror/codemirror.js"></script>
+    <script type="text/javascript" src="/static/codemirror/yaml.js"></script>
+    <script type="text/javascript">
+        (function () {
+            var editor = CodeMirror.fromTextArea(document.getElementById('settings'), {
+                mode: {name: "yaml", json: true},
+                lineNumbers: true,
+                matchBrackets: true
+            });
+            if('{{ result }}'){
+                alert('{{result}}');
+            }
+        })();
+    </script>
+    </body>
+</html>

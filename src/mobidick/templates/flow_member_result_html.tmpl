@@ -1,0 +1,25 @@
+<html>
+	<body>
+Message flow: <span style="font-weight: bold;">{{ mfr.message_flow_name }}</span><br>
+Service member: <span style="font-weight: bold;">{{ name }} ( {{ call.member }} )</span><br>
+<br>
+{% for step in call.steps %}
+<table>
+	<tr>
+		<td style="vertical-align: top;">{{ forloop.counter }}:</td>
+		<td>{{ step.message|linebreaksbr }}</td>
+	</tr>
+{% if step.step_type == "form_step" and step.form_result %}
+	<tr>
+		<td>&nbsp;</td>
+		<td>Answer: <span style="font-weight: bold;">{{ step.display_value|linebreaksbr }}</span>
+	</tr>
+{% endif %}
+	<tr>
+		<td>&nbsp;</td>
+		<td>Button: <span style="font-weight: bold;">{{ step.button }}</span>
+	</tr>
+</table>
+<br>
+{% endfor %}
+

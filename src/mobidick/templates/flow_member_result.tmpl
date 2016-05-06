@@ -1,0 +1,9 @@
+Message flow: {{ mfr.message_flow_name }}
+Service member: {{ name }} ( {{ call.member }} )
+
+{% for step in call.steps %}
+{{ forloop.counter }}: {{ step.message }}{% if step.step_type == "form_step" and step.form_result %}
+  Answer: {{ step.display_value }}{% endif %}
+  Button: {{ step.button }}
+{% endfor %}
+

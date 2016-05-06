@@ -1,0 +1,225 @@
+<html>
+<head>
+    <title>Rogerthat explorer</title>
+    <link rel="stylesheet" href="/static/codemirror/codemirror.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/codemirror/theme.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/sunny/jquery-ui-1.8.17.custom.css"/>
+    <style>
+        body {
+            background-color: lightgray;
+        }
+    </style>
+</head>
+<body>
+<h1>Interactive explorer</h1>
+<div id="modulesContainer">
+    <h3>Modules</h3>
+    <div id="modules">
+    </div>
+</div>
+<h3>Selected module: <span id="selected_module"></span></h3>
+<textarea id="editor" rows="20" cols="80" style="width: 700px; font-family: monospace; font-size: 11px;">def test():
+    return "Hello World"
+</textarea><br>
+<input id="name" class="jq_watermark" title="Supply a name" style="width: 200px">
+<button id="submit" style="width: 500px;">submit</button>
+<hr>
+Author: <span id="author"></span><br>
+Submitted: <span id="timestamp"></span><br>
+Functions:
+<div id="result" class="span-18 last">
+</div>
+<script type="text/javascript" src="/static/codemirror/codemirror.js"></script>
+<script type="text/javascript" src="/static/codemirror/python.js"></script>
+<script src="/static/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+<script src="/static/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>
+<script type="text/javascript"><!--
+var code_editor = null;
+$(window).load(function () {
+    code_editor = CodeMirror.fromTextArea($("#editor").get()[0], {
+        mode: {name: "python", json: true},
+        lineNumbers: true,
+        matchBrackets: true
+    });
+
+    $("#submit").click(function () {
+        var name = $("#name").val();
+        if (name.trim() == "") {
+            alert("Supply a name!");
+            $("#name").focus();
+            return;
+        }
+        $.ajax({
+            url: '/mobiadmin/rest/explore/code/compile',
+            type: 'post',
+            data: {
+                'name': name,
+                'source': code_editor.getValue()
+            },
+            success: function (data, textStatus, XMLHttpRequest) {
+                displayFunctions(data);
+                populateFunctionsMenu();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("Compile failed!");
+            }
+        });
+    });
+    populateFunctionsMenu();
+    $("#left").show();
+});
+
+var displayFunctions = function (mod) {
+    var getf = function (mod, name, div, multiplier, deferred) {
+        return function () {
+            runFunction(mod, name, div, multiplier, deferred);
+        };
+    };
+
+    var rd = $("#result");
+    rd.empty();
+    for (var i in mod.functions) {
+        var name = mod.functions[i];
+        var sdiv = $('<div></div>');
+        sdiv.addClass('span-18');
+        sdiv.addClass('last');
+
+        var div = $('<div></div>');
+        div.html(name);
+        div.addClass('span-6');
+        div.css("float", "left").css("clear", "both");
+        sdiv.append(div);
+        div = $('<div></div>');
+        var button1 = $('<button></button>').text('1x').appendTo(div);
+        var button_deferred = $('<button></button>').text('defer').appendTo(div);
+        div.addClass('span-4');
+        div.css("float", "left");
+        sdiv.append(div);
+        div = $('<div></div>');
+        div.addClass('span-8');
+        div.addClass('last');
+        div.css("float", "left");
+        sdiv.append(div);
+        button1.click(getf(mod, name, div, 1, false));
+        button_deferred.click(getf(mod, name, div, 1, true));
+        rd.append(sdiv);
+    }
+    code_editor.setValue(mod.source);
+    $("#name").val(mod.name);
+    $("#author").text(mod.author);
+    $("#timestamp").text('' + new Date(mod.timestamp * 1000));
+    $("#selected_module").text(mod.name);
+};
+
+var runFunction = function (mod, name, div, multiplier, deferred) {
+    var allresults = [];
+    var display = function (result) {
+        allresults.push(result);
+        var failureCount = 0;
+        var succeedCount = 0;
+        var errors = [];
+        var results = [];
+        var slowestSuccess = 0;
+        var fastestSuccess = 0;
+        var slowestFailure = 0;
+        var fastestFailure = 0;
+        var successTime = 0;
+        var failureTime = 0;
+        for (var i in allresults) {
+            result = allresults[i];
+            if (result.succeeded) {
+                succeedCount++;
+                results[results.length] = result.result;
+                if (slowestSuccess == 0 || result.time > slowestSuccess) {
+                    slowestSuccess = result.time;
+                }
+                if (fastestSuccess == 0 || result.time < fastestSuccess) {
+                    fastestSuccess = result.time;
+                }
+                successTime += result.time;
+            } else {
+                failureCount++;
+                errors[errors.length] = result.result;
+                if (slowestFailure == 0 || result.time > slowestFailure) {
+                    slowestFailure = result.time;
+                }
+                if (fastestFailure == 0 || result.time > fastestFailure) {
+                    fastestFailure = result.time;
+                }
+                failureTime += result.time;
+            }
+        }
+        if (failureCount == succeedCount) {
+            div.html("FAILED! - ");
+            div.append($('<a></a>').addClass("action-link").css("color", "red").css("font-weight", "bold").text("errors").click(function () {
+                $('<div></div>').html(errors.join('<br>')).dialog();
+            }));
+        } else {
+            div.html("SUCCESS! - ");
+            div.append($('<a></a>').addClass("action-link").css("color", "green").css("font-weight", "bold").text("results").click(function () {
+                $('<div></div>').html(results.join('<br>')).dialog();
+            })).append('&nbsp;');
+        }
+    };
+    for (var i = 0; i < multiplier; i++) {
+        $.ajax({
+            url: '/mobiadmin/rest/explore/code/run',
+            type: 'post',
+            data: {
+                codeid: mod.id,
+                version: mod.version,
+                'function': name,
+                'in_a_deferred': deferred
+            },
+            success: function (data, textStatus, XMLHttpRequest) {
+                display(data);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("Run failed!");
+            }
+        });
+    }
+};
+
+var populateFunctionsMenu = function () {
+    var load = function (mod) {
+        return function () {
+            displayFunctions(mod);
+        };
+    };
+    var del = function (mod) {
+        return function () {
+            $.ajax({
+                url: '/mobiadmin/rest/explore/code/delete',
+                type: 'post',
+                data: {
+                    id: mod.id
+                },
+                success: function (data, textStatus, XMLHttpRequest) {
+                    populateFunctionsMenu();
+                }
+            });
+        };
+    };
+    $.ajax({
+        url: '/mobiadmin/rest/explore/code/get',
+        success: function (data, textStatus, XMLHttpRequest) {
+            var modules = $("#modules");
+            modules.empty();
+            for (var i in data) {
+                var mod = data[i];
+                modules.append($('<a></a>').addClass('link').text(mod.name).click(load(mod)));
+                modules.append('&nbsp;');
+                modules.append($('<button>').text('delete').click(del(mod)));
+                modules.append('&nbsp;');
+                modules.append('&nbsp;');
+                modules.append('&nbsp;');
+            }
+        }
+    });
+};
+
+-->
+</script>
+</body>
+</html>

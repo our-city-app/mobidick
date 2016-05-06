@@ -1,0 +1,13 @@
+{% autoescape off %}"Description:";"{{ mfr.description|escape_csv }}"
+"Message flow:";"{{ mfr.message_flow_name|escape_csv }}"
+"Start timestamp (UTC):";"{{ mfr.timestamp|escape_csv }}"
+"Members:";"{{ mfr.members|join:", "|escape_csv }}"
+
+{% for mfmr in message_flow_member_results %}"member result for";"{{ mfmr.member|escape_csv }}"
+"member result received on (UTC)";"{{ mfmr.timestamp|escape_csv }}"
+"step id";"answer id";"form value";"received timestamp (UTC)";"acknowledged timestamp (UTC)";"step type";"message flow id";"step id"{% for step in mfmr.presult.steps %}
+"{{ step.step_id|escape_csv }}";"{{ step.answer_id|answer_id|escape_csv }}";"{{ step|form_result|escape_csv }}";"{{ step.received_timestamp|escape_csv }}";"{{ step.acknowledged_timestamp|escape_csv }}";"{{ step.step_type|escape_csv }}";"{{ step.message_flow_id|escape_csv }}";"{{ step.step_id|escape_csv }}"{% endfor %}
+"End step id";"{{ mfmr.presult.end_id|escape_csv }}"
+"End message flow id";"{{ mfmr.presult.end_message_flow_id|escape_csv }}"
+
+{% endfor %}{% endautoescape %}

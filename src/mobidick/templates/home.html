@@ -1,0 +1,265 @@
+<html>
+<head>
+    <title>Mobidick Rogerthat Service</title>
+    <link rel="stylesheet" href="/static/css/sunny/jquery-ui-1.8.17.custom.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/codemirror/codemirror.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/codemirror/theme.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/main.css" type="text/css"/>
+    <script type="text/javascript" src="/_ah/channel/jsapi"></script>
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+<body>
+<div id="body">
+    <div id="splash" class="ui-element">
+        <div id="whale" class="ui-corner-all">
+            <img id="roger" src="/static/images/roge-logo.png"/>
+        </div>
+        <div id="splash_status">Loading ...</div>
+        <div id="splash_pgb"></div>
+    </div>
+    <div id="top" class="ui-element ui-widget ui-widget-content ui-corner-all mdpanel">
+        <div class="ui-dialog-content ui-widget-content" style="background: none; border: 0;">
+            <img id="logo" src="/static/images/mobidick.jpg" class="ui-corner-all"/>
+            <img id="rogerthat_logo" src="/static/images/roge-logo.png"/>
+            <span id="title">Mobidick: Rogerthat sample service</span><br>
+            <span id="account">{{ account.name }} -- {{ account.email }}</span><br>
+            <span class="key">API key: {{ account.apikey }}</span><br>
+            <span class="key">SIK key: {{ account.sikey }}</span><br>
+        </div>
+    </div>
+    <div id="tabs" class="ui-element mdpanel">
+        <ul>
+            <li><a href="#designer">Designer aid</a></li>
+            <li><a href="#developer">Developer sampler</a></li>
+            <li><a href="#options">Options</a></li>
+            <!--					<li><a href="#analysis">Analysis</a></li> -->
+        </ul>
+
+        <div id="designer">
+            <div id="container">
+                <div id="menu">
+                    <div>
+                        <h3><a href="#">Message flows</a></h3>
+                        <div id="message_flows">
+                            <ul>
+                                <li panel="poke_conf">Poke configuration</li>
+                                <li panel="launch_flow">Start flow</li>
+                                <li panel="flow_results">Flow runs</li>
+                                <li panel="flow_member_results">Flow member results</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3><a href="#">Friends</a></h3>
+                        <div id="friends">
+                            <ul>
+                                <li panel="mass_invite">Mass invite</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="panel">
+                    <div id="mass_invite" class="md-ui-panel">
+                        <div class="ui-widget-header ui-corner-all title">Mass friend invite</div>
+                        Enter email addresses to invite for your service:<br>
+                        <textarea id="email_addresses" type="text" autocapitalize="off"></textarea><br>
+                        Enter invitation message (optional):<br>
+                        <textarea id="invite_message" type="text"></textarea><br>
+                        Select message flow (optional):<br>
+                        <select id="message_flow"></select>&nbsp;<a id="refresh_message_flow_list" class="action-link">refresh</a><br><br>
+                        Enter comma-separated list of email addresses to send results to (optional): <br>
+                        <input id="result_emails" type="text" autocapitalize="off"/><br>
+                        <button id="submit">Send invitations</submit>
+                    </div>
+                    <div id="poke_conf" class="md-ui-panel">
+                        <div class="ui-widget-header ui-corner-all title">Poke configuration</div>
+                        Automatically launch a message flow when user scans QR code, presses a service menu button, or
+                        clicks a service link.<br>
+                        <button id="add_poke_link">Map poke tag to message flow</button>
+                        <div id="table_container">
+                            <table id="pokes">
+                                <tbody id="pokes_body">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="launch_flow" class="md-ui-panel">
+                        <div class="ui-widget-header ui-corner-all title">Start message flow</div>
+                        <br>
+                        Request options:
+                        <hr>
+                        Enter list of Rogerthat friend accounts:<br>
+                        <textarea id="friend_accounts" type="text" autocapitalize="off"></textarea><br>
+                        Select message flow:<br>
+                        <select id="message_flow"></select>&nbsp;<a id="refresh_message_flow_list" class="action-link">refresh</a><br>
+                        Enter service identity: <br>
+                        <input id="service_identity" type="text" autocapitalize="off" value="+default+"/><br><br>
+                        Result options:
+                        <hr>
+                        Enter comma-separated list of email addresses to send results to: <br>
+                        <input id="result_emails" type="text" autocapitalize="off"/><br>
+                        Enter message run description:
+                        <input id="description" type="text"/><br><br>
+                        <button id="submit">Start flow</submit>
+                    </div>
+                    <div id="flow_results" class="md-ui-panel">
+                        <div class="ui-widget-header ui-corner-all title">Message flow runs</div>
+                        <div id="table_container">
+                            <table id="results">
+                                <thead>
+                                <th>Description</th>
+                                <th># members</th>
+                                <th># member results</th>
+                                </thead>
+                                <tbody id="results_body">
+                                </tbody>
+                            </table>
+                            <div id="more_container" class="ui-element"><a id="more" class="action-link">more</a></div>
+                            <img id="loading" src="/static/images/spinner40.gif"/>
+                        </div>
+                    </div>
+                    <div id="flow_member_results" class="md-ui-panel">
+                        <div class="ui-widget-header ui-corner-all title">Message flow member results</div>
+                        <div id="table_container">
+                            <table id="results">
+                                <thead>
+                                <th>Member</th>
+                                <th>Description</th>
+                                <th>Timestamp</th>
+                                <th>&nbsp;</th>
+                                </thead>
+                                <tbody id="results_body">
+                                </tbody>
+                            </table>
+                            <div id="more_container" class="ui-element"><a id="more" class="action-link">more</a></div>
+                            <img id="loading" src="/static/images/spinner40.gif"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="developer">
+            <div id="container">
+                <div id="menu">
+                    <div>
+                        <h3><a href="#">Friends API</a></h3>
+                        <div id="friends_api">
+                            <ul api_category="Friends">
+                                <li>friend.invite</li>
+                                <li>friend.break_up</li>
+                                <li>friend.get_status</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3><a href="#">Messaging API</a></h3>
+                        <div id="messaging_api">
+                            <ul api_category="Messaging">
+                                <li>messaging.send</li>
+                                <li>messaging.send_form</li>
+                                <li>messaging.seal</li>
+                                <li>messaging.start_flow</li>
+                                <li>messaging.start_chat</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3><a href="#">QR Code API</a></h3>
+                        <div id="qrcode_api">
+                            <ul api_category="QR Code">
+                                <li>qr.create</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3><a href="#">System API</a></h3>
+                        <div id="admin_api">Coming soon ...</div>
+                    </div>
+                </div>
+                <div id="title" class="ui-widget-header ui-corner-all title">Friends api: invite</div>
+                <div id="documentation"><a id="documentation_url" href="http://google.com"
+                                           target="blanc">documentation</a></div>
+                <div id="label">params:</div>
+                <div id="editor_container"><textarea id="editor" name="editor"></textarea></div>
+                <div id="settings"><input id="show_result" type="checkbox" checked/><label for="show_result">Show
+                    request details</label></div>
+                <div id="submit_container">
+                    <button id="submit">Submit API call</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="options">
+            <form action="/options" method="post">
+                Select timezone in which to format date and time message flow results:<br>
+                <select name="timezone">
+                    {% for tz in timezones %}
+                    <option value="{{ tz }}" {% if account.dateTimezone == tz %}selected{% endif %}>{{ tz }}</option>
+                    {% endfor %}
+                </select><br>
+                Send daily usage report to:<br>
+                <input name="dailyResultsExport" type="text"
+                       value="{% if account.dailyResultsExport %}{{ account.dailyResultsExport }}{% endif %}"/><br>
+                <input id="options_save" type="submit" value="Save"/>
+            </form>
+        </div>
+
+    </div>
+    <div id="bottom" class="ui-element ui-widget ui-widget-content ui-corner-all mdpanel">
+        <div class="ui-dialog-content ui-widget-content" style="background: none; border: 0;">
+            <div id="title" class="ui-widget-header ui-corner-all title">API activity logs</div>
+            <div id="calls_table_container">
+                <table id="calls" class="ui-corner-all">
+                    <thead>
+                    <tr>
+                        <th>type</th>
+                        <th>method</th>
+                        <th>timestamp</th>
+                        <th>result</th>
+                        <th>help</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="call_result_dialog" style="display: none;">
+    <div id="call_result_dialog_content">
+        <div id="request" class="ui-widget-header ui-corner-all title">Request</div>
+        <div id="request_container"><textarea id="request_text" name="request_text"></textarea></div>
+        <div id="response" class="ui-widget-header ui-corner-all title">Response</div>
+        <div id="response_container"><textarea id="response_text" name="response_text"></textarea></div>
+    </div>
+    <div id="call_result_dialog_spinner">
+        <img src="/static/images/spinner40.gif"/>
+    </div>
+</div>
+<div id="create_new_link_dialog" style="display: none;">
+    Poke tag:
+    <br>
+    <input id="tag" type="text" autocapitalize="off"/>
+    <br><br>
+    Message flow:
+    <br><select id="message_flow"></select>&nbsp;<a id="refresh_message_flow_list" class="action-link">refresh</a>
+    <br><br>
+    <hr>
+    Mail results to:
+    <br><br>
+    <input id="result_emails_to_identity_admins" type="checkbox">
+    <label for="result_emails_to_identity_admins">Service identity administrators</label>
+    <br><br>
+    Additional e-mail addresses (comma separated):
+    <input id="result_emails" type="text" autocapitalize="off">
+</div>
+<script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.17.custom.min.js"></script>
+<script type="text/javascript" src="/static/codemirror/codemirror.js"></script>
+<script type="text/javascript" src="/static/codemirror/javascript.js"></script>
+<script type="text/javascript" src="/_ah/channel/jsapi"></script>
+<script type="text/javascript" src="/static/js/mobidick.js"></script>
+</body>
+</html>

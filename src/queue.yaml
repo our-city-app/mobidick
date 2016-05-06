@@ -1,0 +1,5 @@
+queue:
+- name: highload-controller-queue
+  rate: 20/s
+- name: highload-worker-queue
+  rate: 50/s
