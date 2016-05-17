@@ -23,13 +23,15 @@ import time
 from google.appengine.api import urlfetch, mail
 from google.appengine.ext import deferred, db
 
+from mobidick.models import get_server_settings
+
 
 def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5):
     debug = os.environ["SERVER_SOFTWARE"].startswith('Development') if "SERVER_SOFTWARE" in os.environ else True
     if debug:
         url = "http://%s:8080/api/1" % os.environ["SERVER_NAME"]
     else:
-        url = "https://mobicagecloudhr.appspot.com/api/1"
+        url = "%s/api/1" % get_server_settings().rogerthatBaseUrl
 
     payload = json.dumps({'id':json_rpc_id, 'method': method, 'params': params})
 
