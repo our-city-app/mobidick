@@ -155,11 +155,21 @@ var call_meta = {
 		docs: 'http://www.rogerthat.net/developers/api-reference/#Launch_message_flow',
 		type: TYPE_CALL
 	},
-	'messaging.start_chat': {
-		params: '{\n    "alert_flags": 0, \n    "service_identity": null, \n    "topic": "Alarm situation in sector 5", \n    "tag": null, \n    "context": null, \n    "description": "Alarm situation", \n    "members": [\n        "john.doe@foo.com", \n        "jane.doe@foo.com"\n    ]\n}',
-		docs: 'http://www.rogerthat.net/developers/api-reference/#Launch_message_flow',
-		type: TYPE_CALL
-	},
+    'messaging.start_chat': {
+        params: '{\n    "alert_flags": 0, \n    "service_identity": null, \n    "topic": "Alarm situation in sector 5", \n    "tag": null, \n    "context": null, \n    "description": "Alarm situation", \n    "members": [\n        "john.doe@foo.com", \n        "jane.doe@foo.com"\n    ]\n}',
+        docs: 'http://www.rogerthat.net/developers/api-reference/#Launch_message_flow',
+        type: TYPE_CALL
+    },
+    'messaging.send_chat_message': {
+        params: '{\n    "parent_key": "b2488800-938b-485c-b80b-c30f0126ee91",\n    "message": "The new chat message content.",\n    "answers": [],\n    "attachments": [],\n    "sender": {\n        "email": "john@example.com",\n        "name": "John Doe",\n        "language": "en",\n        "avatar_url": "https://rogerth.at/unauthenticated/mobi/cached/avatar/4824964683268096",\n        "app_id": "rogerthat"\n    },\n    "priority": 1,\n    "sticky": true,\n    "tag": null\n}',
+        docs: 'http://www.rogerthat.net/developers/api-reference/#Launch_message_flow',
+        type: TYPE_CALL
+    },
+    'messaging.delete_chat': {
+        params: '{\n    "parent_message_key": "b2488800-938b-485c-b80b-c30f0126ee91"\n}',
+        docs: 'http://www.rogerthat.net/developers/api-reference/#Launch_message_flow',
+        type: TYPE_CALL
+    },
 	'messaging.flow_member_result': {
 		docs: 'http://www.rogerthat.net/developers/api-reference/#Get_message_flow_result',
 		type: TYPE_CALLBACK
