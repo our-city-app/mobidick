@@ -441,10 +441,11 @@ def messaging_poke(sik, id_, **kwargs):
 
     tag = kwargs['tag']
     email = kwargs["email"]
+    app_id = kwargs["user_details"][0]["app_id"]
     result_key = kwargs["result_key"]
     service_identity = kwargs["service_identity"]
 
-    rpc = db.put_async(Poke(key_name=result_key, parent=account, email=email, tag=tag, timestamp=now(),
+    rpc = db.put_async(Poke(key_name=result_key, parent=account, email=email, app_id=app_id, tag=tag, timestamp=now(),
                             service_identity=service_identity))
 
     key_name = "tag:"

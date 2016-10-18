@@ -74,6 +74,7 @@ def get_active_sessions_for_account(account):
 class Poke(db.Model):
     tag = db.TextProperty()
     email = db.StringProperty(indexed=False)
+    app_id = db.StringProperty(indexed=False)
     timestamp = db.IntegerProperty()
     service_identity = db.StringProperty(indexed=False)
 
