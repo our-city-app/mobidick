@@ -205,8 +205,16 @@ class Code(db.Model):
 
 
 class ServerSettings(CachedModelMixIn, db.Model):
-    cookieSecretKey = add_meta(db.StringProperty(indexed=False), doc="Secret key to encrypt the session (base64.b64encode(SECRET_KEY).decode('utf-8'))", order=82)
-    cookieSessionName = add_meta(db.StringProperty(indexed=False), doc="Cookie name for the session", order=83)
+    rogerthatAddress = add_meta(db.StringProperty(indexed=False),
+                                doc="Rogerthat base URL. Eg: https://rogerth.at",
+                                order=5)
+    cookieSecretKey = add_meta(db.StringProperty(indexed=False),
+                               doc="Secret key to encrypt the session (base64.b64encode(SECRET_KEY).decode('utf-8'))",
+                               order=82)
+    cookieSessionName = add_meta(db.StringProperty(indexed=False),
+                                 doc="Cookie name for the session",
+                                 order=83)
+
 
     def invalidateCache(self):
         logging.info("ServerSettings removed from cache.")
