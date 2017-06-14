@@ -33,7 +33,7 @@ def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5):
         if DEBUG:
             base_url = "http://%s:8080" % os.environ["SERVER_NAME"]
         else:
-            base_url = "https://mobicagecloudhr.appspot.com"
+            base_url = "https://rogerthat-server.appspot.com"
 
     payload = json.dumps({'id':json_rpc_id, 'method': method, 'params': params})
 
