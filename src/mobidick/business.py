@@ -29,6 +29,7 @@ import uuid
 from google.appengine.api.channel.channel import send_message
 from google.appengine.ext import deferred, db
 from google.appengine.ext.webapp import template
+from mobidick.consts import MOBIDICK_DOMAIN_NAME, NOTIFICATIONS_EMAIL_ADDRESS
 from mobidick.models import get_account_by_sik, get_active_sessions_for_account, MessageFlowRun, MessageFlowRunResult, \
     PokeTagMessageFlowLink, Invite, RunnerProcess, MessageFlowRunFollowUp, Poke
 from mobidick.translations import localize
@@ -277,7 +278,7 @@ def _form_update(account, tag, pkey, mkey, member, form_result, answer_id):
                     admin_emails = _get_service_identity_admin_emails(account, mfr.service_identity)
 
                 if admin_emails or mfr.result_emails:
-                    send_mail("%s <%s.followup@mobidick-cloud.appspotmail.com>" % (account.name, mfr_fu.hash_),
+                    send_mail("%s <%s.followup@%s>" % (account.name, mfr_fu.hash_, MOBIDICK_DOMAIN_NAME),
                               list(set(mfr.result_emails + admin_emails)), "RE: Flow member result of %s for %s" % (member, mfr.message_flow_name),
                               message)
             else:
@@ -407,7 +408,7 @@ def _send_mail_for_message_flow_run_result(mfr, mfr_fu, mfmr, account, member, n
 
     logging.info(body)
     if admin_emails or mfr.result_emails:
-        send_mail("%s <%s.followup@mobidick-cloud.appspotmail.com>" % (account.name, mfr_fu.hash_),
+        send_mail("%s <%s.followup@%s>" % (account.name, mfr_fu.hash_, MOBIDICK_DOMAIN_NAME),
                   list(set(mfr.result_emails + admin_emails)), "Flow member result of %s for %s" % (member, mfr.message_flow_name),
                   body, attachments=[('results.csv', csv)], html=body_html)
 
@@ -498,12 +499,12 @@ def friend_invite_result(sik, id_, **kwargs):
             deferred.defer(_send_message_flow, account, invite, email, str(uuid.uuid4()), service_identity)
         if invite.result_emails:
             subject = "%s accepted your invitation with his %s Rogerthat account." % (invite.member, email)
-            send_mail("%s <notifications@mobidick-cloud.appspotmail.com>" % account.name, invite.result_emails,
+            send_mail("%s <%s>" % (account.name, NOTIFICATIONS_EMAIL_ADDRESS), invite.result_emails,
                            subject, subject)
     else:
         if invite.result_emails:
             subject = "%s declined your invitation." % invite.member
-            send_mail("%s <notifications@mobidick-cloud.appspotmail.com>" % account.name, invite.result_emails,
+            send_mail("%s <%s>" % (account.name, NOTIFICATIONS_EMAIL_ADDRESS), invite.result_emails,
                            subject, subject)
 
 def _try_or_defer(method, *args):

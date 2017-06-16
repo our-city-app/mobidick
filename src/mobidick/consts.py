@@ -17,5 +17,11 @@
 
 import os
 
+from google.appengine.api import app_identity
+
+
 DEBUG = os.environ["SERVER_SOFTWARE"].startswith('Development') if "SERVER_SOFTWARE" in os.environ else True
 SESSION_TIMEOUT = 7 * 3600 * 24
+
+MOBIDICK_DOMAIN_NAME = "%s.appspotmail.com" % app_identity.get_application_id()
+NOTIFICATIONS_EMAIL_ADDRESS = "notifications@%s" % MOBIDICK_DOMAIN_NAME

@@ -17,6 +17,7 @@
 
 import datetime
 import json
+import logging
 import os
 import time
 
@@ -26,25 +27,29 @@ from mobidick.consts import DEBUG
 from mobidick.models import get_server_settings
 
 
-def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5):
+def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5, log_traffic=False):
     server_settings = get_server_settings()
     base_url = server_settings.rogerthatAddress
     if not base_url:
         if DEBUG:
             base_url = "http://%s:8080" % os.environ["SERVER_NAME"]
         else:
-            base_url = "https://mobicagecloudhr.appspot.com"
+            base_url = "https://rogerthat-server.appspot.com"
 
-    payload = json.dumps({'id':json_rpc_id, 'method': method, 'params': params})
-
+    payload = json.dumps({'id': json_rpc_id, 'method': method, 'params': params})
     url = base_url + "/api/1"
-    result = urlfetch.fetch(url, \
-        payload=payload, \
-        method='POST', \
-        headers={'Content-Type':'application/json-rpc', 'X-Nuntiuz-API-Key': api_key}, \
-        allow_truncated=False, \
-        follow_redirects=False,
-        deadline=deadline)
+
+    if log_traffic:
+        logging.info('CALL to rogerthat at %s:\n%s' % (url, payload))
+
+    result = urlfetch.fetch(url,
+                            payload=payload,
+                            method='POST',
+                            headers={'Content-Type':'application/json-rpc',
+                                     'X-Nuntiuz-API-Key': api_key},
+                            allow_truncated=False,
+                            follow_redirects=False,
+                            deadline=deadline)
 
     count = 1
 
@@ -58,6 +63,9 @@ def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5):
         count += 1
         if count == 5:
             break
+
+    if log_traffic:
+        logging.info('RESPONSE from rogerthat: status %s - %s', result.status_code, result.content)
 
     if result.status_code not in (200, 401):
         raise ValueError("Could not call Rogerthat API!")
