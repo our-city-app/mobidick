@@ -1,0 +1,4 @@
+cron:
+- description: daily summary job
+  url: /mobiadmin/cron/daily_export
+  schedule: every 30 minutes
