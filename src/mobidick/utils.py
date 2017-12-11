@@ -24,10 +24,10 @@ import time
 from google.appengine.api import urlfetch, mail
 from google.appengine.ext import deferred, db
 from mobidick.consts import DEBUG
-from mobidick.models import get_server_settings
 
 
-def call_rogerthat(api_key, method, params, json_rpc_id, deadline=5, log_traffic=False):
+def call_rogerthat(api_key, method, params, json_rpc_id, deadline=10, log_traffic=False):
+    from mobidick.models import get_server_settings
     server_settings = get_server_settings()
     base_url = server_settings.rogerthatAddress
     if not base_url:

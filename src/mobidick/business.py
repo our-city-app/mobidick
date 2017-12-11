@@ -26,10 +26,11 @@ import os
 import time
 import uuid
 
-from google.appengine.api.channel.channel import send_message
 from google.appengine.ext import deferred, db
 from google.appengine.ext.webapp import template
+
 from mobidick.consts import MOBIDICK_DOMAIN_NAME, NOTIFICATIONS_EMAIL_ADDRESS
+from mobidick.firebase import send_firebase_message
 from mobidick.models import get_account_by_sik, get_active_sessions_for_account, MessageFlowRun, MessageFlowRunResult, \
     PokeTagMessageFlowLink, Invite, RunnerProcess, MessageFlowRunFollowUp, Poke
 from mobidick.translations import localize
@@ -71,10 +72,10 @@ def call(request, sik):
     account = get_account_by_sik(sik)
     if account:
         for session in get_active_sessions_for_account(account):
-            send_message(session.secret, json.dumps({'type': 'callback',
-                                                     'method': method,
-                                                     'request': json.dumps(request, indent=4),
-                                                     'response': json.dumps(response, indent=4)}))
+            send_firebase_message(session.secret, json.dumps({'type': 'callback',
+                                                              'method': method,
+                                                              'request': json.dumps(request, indent=4),
+                                                              'response': json.dumps(response, indent=4)}))
     return response
 
 def test_test(sik, id_, value, **kwargs):
@@ -538,10 +539,11 @@ def _send_message_flow(account, invite, email, json_rpc_id, service_identity):
         return request, presponse
     request, presponse = db.run_in_transaction(trans)
     for session in get_active_sessions_for_account(account):
-        send_message(session.secret, json.dumps({'type': 'callback',
-                                                 'method': 'messaging.start_flow',
-                                                 'request': json.dumps(json.loads(request), indent=4),
-                                                 'response': json.dumps(presponse, indent=4)}))
+        send_firebase_message(session.secret, json.dumps({'type': 'callback',
+                                                          'method': 'messaging.start_flow',
+                                                          'request': json.dumps(json.loads(request), indent=4),
+                                                          'response': json.dumps(presponse, indent=4)}))
+
 
 def _update_result_count(mfr_key, mfmr):
     def trans():
@@ -551,9 +553,10 @@ def _update_result_count(mfr_key, mfmr):
         return mfr
     mfr = db.run_in_transaction(trans)
     for session in get_active_sessions_for_account(mfr.account):
-        send_message(session.secret, json.dumps({'type': 'mfr_update',
-                                                 'mfr': mfr.to_mfr_summary(),
-                                                 'mfmr': mfmr.to_mfmr_summary()}))
+        send_firebase_message(session.secret, json.dumps({'type': 'mfr_update',
+                                                          'mfr': mfr.to_mfr_summary(),
+                                                          'mfmr': mfmr.to_mfmr_summary()}))
+
 
 def _send_text_block(account, json_rpc_id, parent_key, message, text_value, to, tag, service_identity, target_language, branding=None):
     params = {
@@ -579,10 +582,11 @@ def _send_text_block(account, json_rpc_id, parent_key, message, text_value, to, 
     logging.info("Proxy message to %s: \n\n%s\n\n" % (to, params))
     request, response = call_rogerthat(account.apikey, "messaging.send_form", params, json_rpc_id)
     for session in get_active_sessions_for_account(account):
-        send_message(session.secret, json.dumps({'type': 'callback',
-                                                 'method': 'messaging.send_form',
-                                                 'request': json.dumps(json.loads(request), indent=4),
-                                                 'response': json.dumps(json.loads(response), indent=4)}))
+        send_firebase_message(session.secret, json.dumps({'type': 'callback',
+                                                          'method': 'messaging.send_form',
+                                                          'request': json.dumps(json.loads(request), indent=4),
+                                                          'response': json.dumps(json.loads(response), indent=4)}))
+
 
 def _send_followup_message(account, json_rpc_id, parent_key, message, buttons, to, tag, service_identity,
                            new_mfr_fu=None, auto_lock=False, branding=None):
@@ -623,10 +627,11 @@ def _send_followup_message(account, json_rpc_id, parent_key, message, buttons, t
             mfr_fu.put()
 
     for session in get_active_sessions_for_account(account):
-        send_message(session.secret, json.dumps({'type': 'callback',
-                                                 'method': 'messaging.send',
-                                                 'request': json.dumps(request, indent=4),
-                                                 'response': json.dumps(response, indent=4)}))
+        send_firebase_message(session.secret, json.dumps({'type': 'callback',
+                                                          'method': 'messaging.send',
+                                                          'request': json.dumps(request, indent=4),
+                                                          'response': json.dumps(response, indent=4)}))
+
 
 def _seal_message(account, json_rpc_id, parent_key, message_key, service_identity):
     params = {
@@ -638,10 +643,11 @@ def _seal_message(account, json_rpc_id, parent_key, message_key, service_identit
     logging.info("Seal message: \n\n%s\n\n" % params)
     request, response = call_rogerthat(account.apikey, "messaging.seal", params, json_rpc_id)
     for session in get_active_sessions_for_account(account):
-        send_message(session.secret, json.dumps({'type': 'callback',
-                                                 'method': 'messaging.seal',
-                                                 'request': json.dumps(json.loads(request), indent=4),
-                                                 'response': json.dumps(json.loads(response), indent=4)}))
+        send_firebase_message(session.secret, json.dumps({'type': 'callback',
+                                                          'method': 'messaging.seal',
+                                                          'request': json.dumps(json.loads(request), indent=4),
+                                                          'response': json.dumps(json.loads(response), indent=4)}))
+
 
 def system_api_call(sik, id_, **kwargs):
     return dict(error=None, result=None)

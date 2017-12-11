@@ -21,17 +21,19 @@ import os
 import time
 import uuid
 
-from google.appengine.api.channel.channel import create_channel, send_message
 from google.appengine.ext import db, deferred
 from google.appengine.ext.webapp import template
+import webapp2
+
 from mobidick.business import get_templates_dir
-from mobidick.models import Session, MessageFlowRun, get_message_flow_runs, get_message_flow_results, \
+from mobidick.firebase import send_firebase_message, create_firebase_auth_token, \
+    get_firebase_params
+from mobidick.models import MessageFlowRun, get_message_flow_runs, get_message_flow_results, \
     get_message_flow_member_results, PokeTagMessageFlowLink, get_poke_tag_message_flow_link, Invite, \
     get_active_sessions_for_account, get_daily_result_export_by_account, DailyResultExport
 from mobidick.session import get_account_by_session_cookie, get_session_by_session_cookie
 from mobidick.utils import call_rogerthat, safe_file_name, try_encode
 from pytz.gae import pytz
-import webapp2
 
 
 class HomeHandler(webapp2.RequestHandler):
@@ -43,7 +45,14 @@ class HomeHandler(webapp2.RequestHandler):
         if account:
             if not account.dateTimezone:
                 account.dateTimezone = 'Europe/Brussels'
-            self.response.out.write(template.render(path, {'account': account, 'timezones': pytz.all_timezones}))
+            params = {'account': account,
+                      'timezones': pytz.all_timezones
+                      }
+
+            session = get_session_by_session_cookie(self.request.cookies)
+            params.update(get_firebase_params(session.secret))
+
+            self.response.out.write(template.render(path, params))
         else:
             path = os.path.join(tmpl_dir, 'no_session.html')
             self.response.set_status(401)
@@ -287,7 +296,7 @@ def _invite(account, member, invite_message, tag, json_rpc_id):
                                        {'message': invite_message.strip() or None, 'tag': tag, 'email': member,
                                         'language': 'en', 'name': None}, json_rpc_id)
     for session in get_active_sessions_for_account(account):
-        send_message(session.secret, json.dumps(
+        send_firebase_message(session.secret, json.dumps(
             {'type': 'callback', 'method': 'friend.invite', 'request': json.dumps(json.loads(request), indent=4),
              'response': json.dumps(json.loads(response), indent=4)}))
 
@@ -388,21 +397,8 @@ class CreatePokeTagMessageFlowLinkHandler(webapp2.RequestHandler):
 
 
 class GetChannelAPITokenHandler(webapp2.RequestHandler):
-    def post(self):
+
+    def get(self):
         session = get_session_by_session_cookie(self.request.cookies)
         self.response.headers['Content-Type'] = 'application/json'
-        json.dump({'token': create_channel(session.secret)}, self.response.out)
-
-
-class ActivateSessionHandler(webapp2.RequestHandler):
-    def post(self):
-        session = Session.get_by_key_name(self.request.get('from'))
-        session.active = True
-        session.put()
-
-
-class DeactivateSessionHandler(webapp2.RequestHandler):
-    def post(self):
-        session = Session.get_by_key_name(self.request.get('from'))
-        session.active = False
-        session.put()
+        json.dump({'token': create_firebase_auth_token(session.secret)}, self.response.out)

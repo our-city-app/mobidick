@@ -68,7 +68,12 @@ def get_account_by_sik(sik):
 
 
 def get_active_sessions_for_account(account):
-    return Session.all().filter("account =", account).filter("active =", True)
+    from mobidick.utils import now
+    l = []
+    for s in Session.all().filter("account =", account).filter("active =", True):
+        if s.timeout > now():
+            l.append(s)
+    return l
 
 
 class Poke(db.Model):
@@ -215,6 +220,15 @@ class ServerSettings(CachedModelMixIn, db.Model):
                                  doc="Cookie name for the session",
                                  order=83)
 
+    firebaseApiKey = add_meta(db.StringProperty(indexed=False),
+                              doc='Firebase api key',
+                              order=200)
+    firebaseAuthDomain = add_meta(db.StringProperty(indexed=False),
+                                  doc='Firebase auth domain',
+                                  order=201)
+    firebaseDatabaseUrl = add_meta(db.StringProperty(indexed=False),
+                                   doc='Firebase database URL',
+                                   order=202)
 
     def invalidateCache(self):
         logging.info("ServerSettings removed from cache.")

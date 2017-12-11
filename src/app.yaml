@@ -9,7 +9,6 @@ automatic_scaling:
   min_idle_instances: 0
 
 inbound_services:
-- channel_presence
 - warmup
 - mail
 

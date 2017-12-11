@@ -21,12 +21,13 @@ import webapp2
 
 from mobidick.explorer import CompileRequestHandler, ExplorerPage, DeleteCodeRequestHandler, GetCodeRequestHandler, \
     RunCodeRequestHandler
-from mobidick.home import HomeHandler, APICallHandler, GetChannelAPITokenHandler, ActivateSessionHandler, \
-    DeactivateSessionHandler, ExecuteFlowHandler, ListMessageFlowRunsHandler, MFRHandler, \
+from mobidick.firebase import FirebaseCleanupHandler
+from mobidick.home import HomeHandler, APICallHandler, GetChannelAPITokenHandler, ExecuteFlowHandler, \
+    ListMessageFlowRunsHandler, MFRHandler, \
     ListMessageFlowMemberResultsHandler, MFMRHandler, CreatePokeTagMessageFlowLinkHandler, \
     ListPokeTagMessageFlowLinksHandler, DeletePokeTagLinkHandler, MassInviteHandler, OptionsHandler
 from mobidick.receiver import CallbackRequestHTTPHandler
-from mobidick.session import CreateSessionRequestHandler
+from mobidick.session import CreateSessionRequestHandler, SessionCleanupHandler
 from mobidick.settings import ServerSettingsHandler
 
 
@@ -48,15 +49,15 @@ mapping = [
     ('/get_links', ListPokeTagMessageFlowLinksHandler),
     ('/create_link', CreatePokeTagMessageFlowLinkHandler),
     ('/delete_link', DeletePokeTagLinkHandler),
-    ('/get_channel_token', GetChannelAPITokenHandler),
-    ('/_ah/channel/connected/', ActivateSessionHandler),
-    ('/_ah/channel/disconnected/', DeactivateSessionHandler),
+    ('/channel/token', GetChannelAPITokenHandler),
     ('/mobiadmin/rest/explore/code/compile', CompileRequestHandler),
     ('/mobiadmin/rest/explore/code/run', RunCodeRequestHandler),
     ('/mobiadmin/rest/explore/code/delete', DeleteCodeRequestHandler),
     ('/mobiadmin/rest/explore/code/get', GetCodeRequestHandler),
     ('/mobiadmin/settings', ServerSettingsHandler),
-    ('/mobiadmin/explorer', ExplorerPage)
+    ('/mobiadmin/explorer', ExplorerPage),
+    ('/mobiadmin/cron/session/cleanup', SessionCleanupHandler),
+    ('/mobiadmin/cron/firebase/cleanup', FirebaseCleanupHandler),
 ]
 
 app = webapp2.WSGIApplication(mapping)

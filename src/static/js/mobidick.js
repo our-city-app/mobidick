@@ -664,26 +664,29 @@ var load = function (index) {
 	loader.func(load, index+1);
 };
 
-var create_channel = function(onopen) {
+var create_channel = function(onOpen) {
 	$.ajax({
-		url: '/get_channel_token',
-		type: 'POST',
+		url: '/channel/token',
+		type: 'get',
 		success: function (data) {
-			var channel = new goog.appengine.Channel(data.token);
-			var socket = channel.open();
-			socket.onopen = onopen;
-			socket.onclose = function () {
+			var onClose = function() {
 				var dialog = $("<div></div>").text("The live updating channel has been terminated. Close this window to create a new live updating channel.").dialog({
 					title: 'Live updating channel terminated.',
 					close: function () {
-						create_channel(function () {
-							dialog.dialog('close');
-						});
+						window.location.reload();
 						return false;
 					}
 				});
-			};
-			socket.onmessage = on_channel_message;
+            };
+
+            var channel = new FirebaseChannel(firebaseConfig,
+                                              data.token || firebaseToken,
+                                              'channels',
+                                              firebaseUID,
+                                              onOpen,
+                                              on_channel_message,
+                                              onClose);
+            channel.connect();
 		},
 		error: function () {
 			alert('Could not setup live update channel.')
@@ -692,7 +695,6 @@ var create_channel = function(onopen) {
 };
 
 var on_channel_message = function (data) {
-	data = JSON.parse(data.data);
 	if (data.type == "callback") {
 		add_call_to_logs(data.method, data);
 	} else if (data.type == "mfr_update") {

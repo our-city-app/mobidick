@@ -1,4 +1,7 @@
 cron:
-- description: daily summary job
-  url: /mobiadmin/cron/daily_export
-  schedule: every 30 minutes
+- description: Session cleanup
+  url: /mobiadmin/cron/session/cleanup
+  schedule: every day 01:00
+- description: Firebase cleanup
+  url: /mobiadmin/cron/firebase/cleanup
+  schedule: 1 of month 0:00

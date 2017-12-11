@@ -18,11 +18,14 @@
 import json
 import uuid
 
+from google.appengine.ext import db
+import webapp2
+
 from mobidick.consts import SESSION_TIMEOUT
 from mobidick.cookie import set_cookie, parse_cookie
+from mobidick.job import run_job
 from mobidick.models import Account, Session, get_server_settings
-from mobidick.utils import call_rogerthat
-import webapp2
+from mobidick.utils import call_rogerthat, now
 
 
 class CreateSessionRequestHandler(webapp2.RequestHandler):
@@ -56,11 +59,38 @@ class CreateSessionRequestHandler(webapp2.RequestHandler):
             account.put()
 
         secret = unicode(uuid.uuid4()).replace("-", "")
-        Session(key_name=secret, account=account, timeout=SESSION_TIMEOUT).put()
+        Session(key_name=secret, account=account, active=True, timeout=now() + SESSION_TIMEOUT).put()
 
         server_settings = get_server_settings()
         set_cookie(self.response, server_settings.cookieSessionName, secret)
         self.redirect('/', False)
+
+
+class SessionCleanupHandler(webapp2.RequestHandler):
+
+    def get(self):
+        run_job(_get_session_keys, [], _cleanup_session, [])
+
+
+def _get_session_keys():
+    return Session.all(keys_only=True).filter("active =", True)
+
+
+def _cleanup_session(session_key):
+
+    def trans():
+        session = db.get(session_key)
+        if session.account == None:
+            pass
+        elif session.timeout > now():
+            return
+
+        session.active = False
+        session.put()
+
+    xg_on = db.create_transaction_options(xg=True)
+    db.run_in_transaction_options(xg_on, trans)
+
 
 def get_session_by_session_cookie(request_cookies):
     server_settings = get_server_settings()
@@ -70,6 +100,7 @@ def get_session_by_session_cookie(request_cookies):
         return None
     secret = parse_cookie(cookie)
     return Session.get_by_key_name(secret)
+
 
 def get_account_by_session_cookie(request_cookies):
     session = get_session_by_session_cookie(request_cookies)
